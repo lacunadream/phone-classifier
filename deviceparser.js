@@ -100,13 +100,13 @@ function parseResponse(deviceName, response) {
     if (price) {
       const value = parseInt(price.match(/([\d])\w+/g)[0], 10);
       switch (true) {   
-        case (value <= 200): 
+        case (value <= 150): 
           deviceValue = 'low';
           break;
-        case (value <= 450):
+        case (value <= 420):
           deviceValue = 'medium';
           break;
-        case (value > 450): 
+        case (value > 420): 
           deviceValue = 'high';
           break;
         default: 
@@ -114,7 +114,7 @@ function parseResponse(deviceName, response) {
       }
     }
     // manual override for apple
-    if (response[0].Brand === 'Apple') deviceValue = 'high';
+    if (response[0].Brand === 'Apple' && parseInt(year, 10) >= 2015) deviceValue = 'high';
     if (sim && /dual/gi.test(sim)) deviceSim = 'dual';
   }
   return {
