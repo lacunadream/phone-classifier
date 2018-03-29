@@ -5,10 +5,10 @@ import { logger } from 'ms-logging';
 import queue from 'queue';
 
 let q = queue();
-q.concurrency = 5;
+q.concurrency = 10;
 
 const outputFile = `./output/devices-parsed-${new Date().getTime()}.csv`;
-fs.writeFileSync(outputFile, 'Device, Platform, Price Category(L/M/H)');
+fs.writeFileSync(outputFile, 'Device, Platform, Price Category(L/M/H), Sim Type \n');
 
 const lineReader = require('readline').createInterface({
   input: require('fs').createReadStream(`./devices.csv`)
@@ -24,14 +24,14 @@ lineReader.on('line', (line) => {
   q.push((cb) => {
     setTimeout(async () => {
       try {
-        const phonePrice = await queryPhoneType(tab[0]);
-        fs.appendFileSync(outputFile, `${tab[0]}, ${tab[1]}, ${phonePrice} \n`);
+        const { deviceValue, deviceSim } = await queryPhoneType(tab[0]);
+        fs.appendFileSync(outputFile, `${tab[0]}, ${tab[1]}, ${deviceValue}, ${deviceSim} \n`);
       } catch (err) {
         logger.error(err);
-        fs.appendFileSync(outputFile, `${tab[0]}, ${tab[1]}, error \n`);
+        fs.appendFileSync(outputFile, `${tab[0]}, ${tab[1]}, error, error \n`);
       }
       cb();
-    }, 200)
+    }, 100)
   })
 })
 
@@ -69,7 +69,10 @@ async function queryPhoneType(deviceName) {
     return parseResponse(deviceName, response.data);
   } catch (err) {
     logger.error(err);
-    return 'low';
+    return {
+      deviceValue: 'low',
+      deviceSim: 'single',
+    };
   }
 }
 
@@ -79,13 +82,23 @@ async function queryPhoneType(deviceName) {
  * @param {*} response 
  */
 function parseResponse(deviceName, response) {
-  let deviceValue = '';
-  logger.database(response);
+  let deviceValue = 'low';
+  let deviceSim = 'single';
+  // logger.database(response);
   if (response[0]) {
-    logger.debug(`${deviceName} | ${response[0].price}`);
-    if (response[0].Brand === 'Apple') return 'high';
-    if (response[0].price) {
-      const value = parseInt(response[0].price.match(/([\d])\w+/g)[0], 10);
+    // sometimes more than 1 result is returned despite limit = 1;
+    let price = null;
+    const sim = response[0].sim;
+    const year = response[0].announced.substring(0, 4);
+    for (const device of response) {
+      if (device.price && year === device.announced.substring(0, 4)) {
+        price = device.price;
+        break;
+      }
+    }
+    logger.debug(`${deviceName} | ${price} | ${sim}`);
+    if (price) {
+      const value = parseInt(price.match(/([\d])\w+/g)[0], 10);
       switch (true) {   
         case (value <= 200): 
           deviceValue = 'low';
@@ -99,8 +112,13 @@ function parseResponse(deviceName, response) {
         default: 
           deviceValue = 'low';
       }
-      return deviceValue;
     }
+    // manual override for apple
+    if (response[0].Brand === 'Apple') deviceValue = 'high';
+    if (sim && /dual/gi.test(sim)) deviceSim = 'dual';
   }
-  return 'low';
+  return {
+    deviceValue,
+    deviceSim,
+  };
 }
