@@ -47,15 +47,11 @@ q.on('success', () => {
   logger.info(`completed ${completedCounter} / ${jobsCounter}`);
 })
 
-// (async function() {
-//   await queryPhoneType('Galaxy S8')
-// })()
-
 logger.debug(process.env.FRESHPI_APITOKEN)
 
 /**
- * 
- * @param {*} deviceName 
+ * call api and return value/sim results
+ * @param {string} deviceName 
  */
 async function queryPhoneType(deviceName) {
   try {
@@ -77,14 +73,14 @@ async function queryPhoneType(deviceName) {
 }
 
 /**
- * 
- * @param {*} deviceName 
- * @param {*} response 
+ * process the response from the api
+ * @param {string} deviceName 
+ * @param {object} response 
  */
 function parseResponse(deviceName, response) {
   let deviceValue = 'low';
   let deviceSim = 'single';
-  // logger.database(response);
+  // logger.verbose(response);
   if (response[0]) {
     // sometimes more than 1 result is returned despite limit = 1;
     let price = null;
@@ -99,7 +95,8 @@ function parseResponse(deviceName, response) {
     logger.debug(`${deviceName} | ${price} | ${sim}`);
     if (price) {
       const value = parseInt(price.match(/([\d])\w+/g)[0], 10);
-      switch (true) {   
+      switch (true) {
+        // values are tailored to Malaysian market
         case (value <= 150): 
           deviceValue = 'low';
           break;
@@ -122,3 +119,7 @@ function parseResponse(deviceName, response) {
     deviceSim,
   };
 }
+
+// (async function() {
+//   await queryPhoneType('Galaxy S8')
+// })()

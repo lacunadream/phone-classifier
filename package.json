@@ -15,7 +15,7 @@
     "babel-preset-env": "^1.6.1",
     "babel-register": "^6.26.0",
     "dotenv": "^5.0.1",
-    "ms-logging": "git+https://363bd58b5dbbccd56ea254018352f6968de013e7:x-oauth-basic@github.com/lacunadream/ms-logging.git#master",
+    "ms-logging": "git+https://6e4c23fc7a7522e7837175c4a21be8f1ccf5472a:x-oauth-basic@github.com/lacunadream/ms-logging.git#master",
     "queue": "^4.4.2"
   }
 }
