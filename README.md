@@ -14,6 +14,7 @@ Phone characteristics data is obtained from [fonoApi](https://fonoapi.freshpixl.
 - Install dependencies `npm i`
 - Place csv file of devices to be classified in `input`
 - Run: `npm run start -- <filename>`
+- Parsed files will be saved in `output`
 
 ### Environment Variables
 
