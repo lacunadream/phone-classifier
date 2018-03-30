@@ -12,7 +12,8 @@ Phone characteristics data is obtained from [fonoApi](https://fonoapi.freshpixl.
 
 - Retrieve an access token from [fonoApi](https://fonoapi.freshpixl.com/token/generate)
 - Install dependencies `npm i`
-- Run: `npm start`
+- Place csv file of devices to be classified in `input`
+- Run: `npm run start -- <filename>`
 
 ### Environment Variables
 

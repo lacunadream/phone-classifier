@@ -4,22 +4,25 @@ import fs from 'fs';
 import { logger } from 'ms-logging';
 import queue from 'queue';
 
-let q = queue();
+const q = queue();
 q.concurrency = 10;
+const inputFileName = process.argv[2];
 
-const outputFile = `./output/devices-parsed-${new Date().getTime()}.csv`;
-fs.writeFileSync(outputFile, 'Device, Platform, Price Category(L/M/H), Sim Type \n');
+logger.info(`file: ${inputFileName} | token: ${process.env.FRESHPI_APITOKEN}`);
 
 const lineReader = require('readline').createInterface({
-  input: require('fs').createReadStream(`./devices.csv`)
+  input: require('fs').createReadStream(`./input/${inputFileName}`)
 });
+
+const outputFile = `./output/${inputFileName.substring(0, inputFileName.length - 4)}-parsed-${new Date().getTime()}.csv`;
+fs.writeFileSync(outputFile, 'Device, Platform, Price Category(L/M/H), Sim Type \n');
 
 let jobsCounter = 0;
 let completedCounter = 0;
 
 lineReader.on('line', (line) => {
   const tab = line.split(',');
-  logger.info(tab[0])
+  // logger.info(tab[0]);
   jobsCounter += 1;
   q.push((cb) => {
     setTimeout(async () => {
@@ -46,8 +49,6 @@ q.on('success', () => {
   completedCounter += 1;
   logger.info(`completed ${completedCounter} / ${jobsCounter}`);
 })
-
-logger.debug(process.env.FRESHPI_APITOKEN)
 
 /**
  * call api and return value/sim results
